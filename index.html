@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title></title>
+  <script type="text/javascript" src="./jquery-1.9.1.min.js"></script>
+  <style>
+    .flexrows {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: start;
+      align-items: center;
+    }
+    .flexrowc {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: center;
+      align-items: center;
+    }
+    .flexrowe {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: flex-end;
+      align-items: center;
+    }
+    .flexrowa {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-around;
+      align-items: center;
+    }
+    .flexrowb {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .flexrow {
+      display: flex;
+      flex-flow: row nowrap;
+      justify-content: space-between;
+      align-items: stretch;
+    }
+    .flexcolc {
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
+      align-items: center;
+    }
+    .flexcol {
+      display: flex;
+      flex-flow: column nowrap;
+      justify-content: center;
+      align-items: stretch;
+    }
+    .flexsg {
+      flex-grow: 1;
+      flex-shrink: 1;
+    }
+    div#newCss {
+      /* border: 1px solid #999; */
+      /* width: 504px; */
+      /* height: 140px; */
+    }
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    .header {
+      height: 50px;
+    }
+    .section {
+      height: calc(100vh - 60px);
+    }
+  </style>
+</head>
+
+<body>
+  <div class="header flexrows">
+      <input id="bili" placeholder="1rem=多少rpx">
+      <input type="button" value="rem转换rpx" onclick="rem2rpx()" />
+  </div>
+  <div class=" section flexrow">
+    <div class="left item flexsg flexcol">
+      <h4>rem样式</h4>
+      <textarea class="flexsg" id="css" cols="60" rows="10"></textarea>
+    </div>
+    <div class="right item flexsg flexcol">
+      <h4>转换后的样式</h4>
+      <textarea class="flexsg" id="newCss" cols="60" rows="10"></textarea>
+    </div>
+  </div>
+  <script type="text/javascript">
+  let bili = 50;
+  let jingdu = 1000; // rem精度
+  document.querySelector("#bili").onchange =  function () {
+    bili = Number(this.value);
+    console.log(bili)
+  }
+  document.querySelector("#css").onscroll = function (e) {
+      document.querySelector("#newCss").scrollTop = this.scrollTop;
+  }
+  document.querySelector("#newCss").onscroll = function (e) {
+    document.querySelector("#css").scrollTop = this.scrollTop;
+  }
+    function rem2rpx() {
+      var oldCss = document.getElementById("css").value.trim(); //".similar_recommend .title{margin:.3rem 0 0;padding-top:.4rem;color:#666;font-size:.28rem;}"
+      //对原样式根据rem进行拆分成数组，这样除了最后一个元素，数组前边的几个元素都是以原rem样式数值结尾
+      //拆分后的格式：[".similar_recommend{background:#fff;border-radius:.1", ";height:7.4", ";margin-top:-.3", "}"]
+      var newCssArr = oldCss.split("rem")
+      var newCss = "" //转换后新的样式变量
+      for (var i in newCssArr) {
+        if (i < newCssArr.length - 1) {
+          //非最后一个元素，对字符串按照:再次拆分，把rem样式的数值分离出来进行转换
+          var str = newCssArr[i]
+          var idx = str.lastIndexOf(':')
+          var prevStr = str.substring(0, idx + 1)
+          var nextStr = "" //nextStr格式为    -.3 , -3 , 3 , .3
+          if (str.indexOf('-.') > -1) {
+            //nextStr格式为-.3rem或-3rem
+            nextStr = str.substring(str.indexOf(':-') + 2, str.length)
+            //nextStr格式为.3rem或3rem
+            if (nextStr.indexOf('.') > -1) {
+              nextStr = "0" + nextStr
+            }
+            console.log(1, nextStr);
+            nextStr = "-" + (nextStr * jingdu * bili) / jingdu + "rpx"
+          } else {
+            nextStr = str.substring(idx + 1, str.length)
+            //处理 nextStr="1px .2"的情况
+            var index = nextStr.indexOf(' ')
+            console.log(index)
+            if (index >= 0) {
+              nextStr = check0(nextStr, index);
+              console.log(nextStr);
+              // let str1 = nextStr.substring(0, index)
+              // let str2 = nextStr.substring(index + 1, nextStr.length)
+              // str2 = str2.trim().indexOf('.') === 0 ? "0" + str2 : str2
+              // console.log(2, str2);
+              // str2 = parseInt(str2 * bili) + "rpx"
+              // nextStr = str1 + ' ' + str2
+            } else {
+              nextStr = nextStr.indexOf('.') > -1 ? "0" + nextStr : nextStr
+              console.log(3, nextStr);
+              nextStr = (nextStr * jingdu * bili) / jingdu + "rpx"
+            }
+          }
+
+          //重组数组内的样式字符串
+          newCss += prevStr + "" + nextStr
+        } else {
+          //追加最后一个数组元素
+          newCss += newCssArr[i]
+        }
+      }
+      document.getElementById("newCss").value = newCss
+    }
+    function check0(nextStr, index) {
+      console.log(nextStr)
+      if (nextStr.indexOf('0 ') > -1) {
+        // 解决 0 0.2rem
+        var index0 = nextStr.indexOf('0 ');
+        let str1 = nextStr.substring(0, index0)
+        let str2 = nextStr.substring(index0 + 2, nextStr.length);
+        nextStr = str1 + '0 ';
+        var indexs = str2.indexOf(' ')
+        console.log(indexs)
+        if (indexs >= 0) {
+          return nextStr += check0(str2, indexs);
+        } else {
+          str2 = str2.trim().indexOf('.') === 0 ? "0" + str2 : str2
+          str2 = (str2 * jingdu * bili) / jingdu + "rpx"
+          nextStr += str2
+          console.log(4, nextStr);
+          return nextStr;
+        }
+      } else if (nextStr.indexOf('- ') > -1) {
+         var index0 = nextStr.indexOf('- ');
+        let str1 = nextStr.substring(0, index0 + 2);
+        let str2 = nextStr.substring(index0 + 2, nextStr.length);
+        str2 = str2.trim().indexOf('.') === 0 ? "0" + str2 : str2
+        console.log(6, str2);
+        // 解决 calc(100vh - 0.25rem)
+        str2 = (str2 * jingdu * bili) / jingdu + "rpx"
+        nextStr = str1 + ' ' + str2
+        console.log(nextStr)
+        return nextStr;
+      } else {
+        let str1 = nextStr.substring(0, index)
+        let str2 = nextStr.substring(index + 1, nextStr.length)
+        str2 = str2.trim().indexOf('.') === 0 ? "0" + str2 : str2
+        console.log(5, str2);
+        str2 = (str2 * jingdu * bili) / jingdu + "rpx"
+        nextStr = str1 + ' ' + str2
+        console.log(nextStr)
+        return nextStr;
+      }
+    }
+  </script>
+</body>
+
+</html>
