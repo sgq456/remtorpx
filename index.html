@@ -108,7 +108,7 @@
       var oldCss = document.getElementById("css").value.trim(); //".similar_recommend .title{margin:.3rem 0 0;padding-top:.4rem;color:#666;font-size:.28rem;}"
       //对原样式根据rem进行拆分成数组，这样除了最后一个元素，数组前边的几个元素都是以原rem样式数值结尾
       //拆分后的格式：[".similar_recommend{background:#fff;border-radius:.1", ";height:7.4", ";margin-top:-.3", "}"]
-      var newCssArr = oldCss.split("rem")
+      var newCssArr = oldCss.split("rem").map(item => item.trim());
       var newCss = "" //转换后新的样式变量
       for (var i in newCssArr) {
         if (i < newCssArr.length - 1) {
@@ -127,7 +127,7 @@
             console.log(1, nextStr);
             nextStr = "-" + (nextStr * jingdu * bili) / jingdu + "rpx"
           } else {
-            nextStr = str.substring(idx + 1, str.length)
+            nextStr = str.substring(idx + 1, str.length).trim();
             //处理 nextStr="1px .2"的情况
             var index = nextStr.indexOf(' ')
             console.log(index)
@@ -190,7 +190,7 @@
         let str1 = nextStr.substring(0, index)
         let str2 = nextStr.substring(index + 1, nextStr.length)
         str2 = str2.trim().indexOf('.') === 0 ? "0" + str2 : str2
-        console.log(5, str2);
+        console.log(5, str1, str2);
         str2 = (str2 * jingdu * bili) / jingdu + "rpx"
         nextStr = str1 + ' ' + str2
         console.log(nextStr)
